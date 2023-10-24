@@ -12,18 +12,21 @@ This Discord bot facilitates a buddy pairing system, allowing users to be paired
 **Set up a discord bot first! See below how!**
 
 1. **Clone the Repository**:
+
    ```bash
    git clone https://github.com/Giveth/buddy-bot.git
    cd buddy-bot
    ```
 
 2. **Install Dependencies**:
+
    ```bash
    npm install
    ```
 
 3. **Environment Variables**:
    Copy `.env.template` to `.env.template` set all the needed values:
+
    ```
    SPREADSHEET_ID=your_spreadsheet_id
    MAIN_SHEET_NAME=your_main_sheet_name
@@ -47,6 +50,7 @@ This Discord bot facilitates a buddy pairing system, allowing users to be paired
 4. Under the "TOKEN" section, click "Copy" to get your bot token. This is what you'll set as `DISCORD_TOKEN` in your `.env` file.
 5. Under the "OAuth2" tab, under "OAuth2 URL Generator", select the following scopes: `bot`.
 6. Under "Bot Permissions", select:
+
    - `Send Messages`
    - `Read Message History`
    - `View Channels`
@@ -55,7 +59,7 @@ This Discord bot facilitates a buddy pairing system, allowing users to be paired
 
 7. Using the generated URL under "OAuth2 URL Generator", invite the bot to your server.
 
-## Usage:
+## Admin commands:
 
 - **Updating the Contributors Sheet**:
   Admin users can type `!fillSheet` to update the contributors sheet with all people who possess the "Contributor" role.
@@ -63,9 +67,13 @@ This Discord bot facilitates a buddy pairing system, allowing users to be paired
 - **Pairing Contributors**:
   Admin users can type `!pairContributors` in any channel to initiate the **pairing process**.
 
+- `!checkDates` - Check for calls that occurred over 10 weeks ago
+- `!checkCalls` - Check if any calls happened recently and if yes ask for the notes
+
 ## The Pairing process
+
 - A cron job is packaged with the bot that will run `!pairContributors` automatically every quarter
-- Once the process has been started the *announcement channel* will announce the pairings for this round and send a DM to every participant, telling them who their buddy is and requesting a date and time for their feedback call
+- Once the process has been started the _announcement channel_ will announce the pairings for this round and send a DM to every participant, telling them who their buddy is and requesting a date and time for their feedback call
 - Another cron job will check the sheet every ten minutes for buddy calls that already happened
 - One hour after a call, the contributors will get a DM asking them for their buddy feedback call **notes**
 - The notes get sent to the relevant person in HR
@@ -73,6 +81,7 @@ This Discord bot facilitates a buddy pairing system, allowing users to be paired
 ## Docker Deployment:
 
 1. Build the Docker image:
+
    ```bash
    docker build -t your_bot_name .
    ```

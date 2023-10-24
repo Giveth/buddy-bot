@@ -10,6 +10,8 @@ const ANNOUNCEMENT_CHANNEL_ID = process.env.ANNOUNCEMENT_CHANNEL_ID;
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const ADMIN_ID = process.env.ADMIN_ID;
 const ROLE = process.env.ROLE;
+const SELFREVIEW_FORM = process.env.SELFREVIEW_FORM;
+const FEEDBACK_FORM = process.env.FEEDBACK_FORM;
 
 const bot = new Client();
 const doc = new GoogleSpreadsheet(SPREADSHEET_ID);
@@ -24,6 +26,8 @@ module.exports = {
   PAIRINGS_SHEET_NAME,
   ANNOUNCEMENT_CHANNEL_ID,
   DISCORD_TOKEN,
+  SELFREVIEW_FORM,
+  FEEDBACK_FORM,
   ADMIN_ID,
   ROLE,
 };
