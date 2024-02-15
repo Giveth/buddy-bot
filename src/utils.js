@@ -36,8 +36,14 @@ function parseDate(dateString) {
   return null;
 }
 
+function isValidDateWithTime(date) {
+  const time = date.getHours() + date.getMinutes();
+  return time !== 0;
+}
+
 module.exports = {
   shuffle,
   notifyAdmins,
   parseDate,
+  isValidDateWithTime,
 };

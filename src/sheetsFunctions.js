@@ -1,5 +1,5 @@
 const moment = require("moment");
-const { shuffle, notifyAdminss } = require("./utils");
+const { shuffle, notifyAdmins } = require("./utils");
 const { format } = require("date-fns");
 const {
   bot,
@@ -73,7 +73,11 @@ async function updateContributorsSheet() {
     console.log("Contributors sheet updated successfully!");
   } catch (error) {
     console.error(`Error updating Contributors sheet: ${error.message}`);
-    await notifyAdmins(`Error updating Contributors sheet: ${error.message}`);
+    await notifyAdmins(
+      `Error updating Contributors sheet: ${error.message}`,
+      bot,
+      ADMIN_IDS
+    );
   }
 }
 
@@ -152,46 +156,9 @@ async function pairContributors() {
   } catch (error) {
     console.error(`Error in pairContributors function: ${error.message}`);
     await notifyAdmins(
-      `Error occurred while pairing contributors: ${error.message}`
-    );
-  }
-}
-
-async function fetchAndSavePairingsWithoutDate() {
-  try {
-    await doc.loadInfo();
-    const mainSheet = doc.sheetsByTitle[MAIN_SHEET_NAME];
-    const pairingSheet = doc.sheetsByTitle[PAIRINGS_SHEET_NAME];
-
-    const rows = await mainSheet.getRows();
-
-    const pairs = rows.map((row) => [
-      {
-        name: row.Names,
-        id: row.UserID,
-      },
-      {
-        name: row.Buddy,
-        id: row.BuddyID,
-      },
-    ]);
-
-    // Save the pairs back to the Pairings sheet without a date
-    for (const pair of pairs) {
-      await pairingSheet.addRow({
-        Pair: pair.map((p) => p.name).join(" & "),
-        ID1: pair[0].id,
-        ID2: pair[1] ? pair[1].id : "", // Handle odd numbers of contributors
-        State: "paired no date", // New column
-      });
-    }
-    return pairs;
-  } catch (error) {
-    console.error(
-      `Error in fetchAndSavePairingsWithoutDate function: ${error.message}`
-    );
-    await notifyAdmins(
-      `Error occurred while fetching and saving pairings without date: ${error.message}`
+      `Error occurred while pairing contributors: ${error.message}`,
+      bot,
+      ADMIN_IDS
     );
   }
 }
@@ -238,6 +205,49 @@ async function dmBuddies(userId) {
   }
 }
 
+// Fill the backend sheet with buddy pairings and set the state to "paired no date"
+async function fetchAndSavePairingsWithoutDate() {
+  try {
+    await doc.loadInfo();
+    const mainSheet = doc.sheetsByTitle[MAIN_SHEET_NAME];
+    const pairingSheet = doc.sheetsByTitle[PAIRINGS_SHEET_NAME];
+
+    const rows = await mainSheet.getRows();
+
+    const pairs = rows.map((row) => [
+      {
+        name: row.Names,
+        id: row.UserID,
+      },
+      {
+        name: row.Buddy,
+        id: row.BuddyID,
+      },
+    ]);
+
+    // Save the pairs back to the Pairings sheet without a date
+    for (const pair of pairs) {
+      await pairingSheet.addRow({
+        Pair: pair.map((p) => p.name).join(" & "),
+        ID1: pair[0].id,
+        ID2: pair[1] ? pair[1].id : "", // Handle odd numbers of contributors
+        State: "paired no date", // New column
+      });
+    }
+    return pairs;
+  } catch (error) {
+    console.error(
+      `Error in fetchAndSavePairingsWithoutDate function: ${error.message}`
+    );
+    await notifyAdmins(
+      `Error occurred while fetching and saving pairings without date: ${error.message}`,
+      bot,
+      ADMIN_IDS
+    );
+  }
+}
+
+// DEPRECATED
 async function fetchAndSavePairings() {
   try {
     await doc.loadInfo();
@@ -308,11 +318,14 @@ async function fetchAndSavePairings() {
   } catch (error) {
     console.error(`Error in fetchAndSavePairings function: ${error.message}`);
     await notifyAdmins(
-      `Error occurred while fetching and saving pairings: ${error.message}`
+      `Error occurred while fetching and saving pairings: ${error.message}`,
+      bot,
+      ADMIN_IDS
     );
   }
 }
 
+// Check if the last call date is overdue and update the state in the sheet
 async function checkLastCallDate() {
   try {
     await doc.loadInfo();
@@ -343,15 +356,19 @@ async function checkLastCallDate() {
   } catch (error) {
     console.error(`Error in checkLastCallDate function: ${error.message}`);
     await notifyAdmins(
-      `Error occurred while checking last call dates: ${error.message}`
+      `Error occurred while checking last call dates: ${error.message}`,
+      bot,
+      ADMIN_IDS
     );
     return [];
   }
 }
 
+// DEPRECATED
 async function processDate(message, dateTime) {
   try {
     // Store the date in Google Sheet (or other storage)
+    await doc.loadInfo();
     const pairingSheet = doc.sheetsByTitle[PAIRINGS_SHEET_NAME];
     const rows = await pairingSheet.getRows();
     const userRow = rows.find(
@@ -384,7 +401,9 @@ async function processDate(message, dateTime) {
   } catch (error) {
     console.error(`Error in processDate function: ${error.message}`);
     await notifyAdmins(
-      `Error occurred while processing the date: ${error.message}`
+      `Error occurred while processing the date: ${error.message}`,
+      bot,
+      ADMIN_IDS
     );
   }
 }
@@ -443,7 +462,9 @@ async function promptSelfReview() {
   } catch (error) {
     console.error(`Error in promptSelfReview function: ${error.message}`);
     await notifyAdmins(
-      `Error occurred while asking users for self-review: ${error.message}`
+      `Error occurred while asking users for self-review: ${error.message}`,
+      bot,
+      ADMIN_IDS
     );
   }
 }
@@ -565,7 +586,11 @@ async function checkCalls() {
     }
   } catch (error) {
     console.error(`Error in checkCalls function: ${error.message}`);
-    await notifyAdmins(`Error occurred while checking calls: ${error.message}`);
+    await notifyAdmins(
+      `Error occurred while checking calls: ${error.message}`,
+      bot,
+      ADMIN_IDS
+    );
   }
 }
 
@@ -632,7 +657,11 @@ async function sendNotes() {
     }
   } catch (error) {
     console.error(`Error in sendNotes function: ${error.message}`);
-    await notifyAdmins(`Error occurred while sending notes: ${error.message}`);
+    await notifyAdmins(
+      `Error occurred while sending notes: ${error.message}`,
+      bot,
+      ADMIN_IDS
+    );
   }
 }
 
@@ -651,7 +680,7 @@ async function saveBuddyCallDate(userId, date) {
     (row) => row.State === "awaitingDate" && row.ID1 === userId
   );
   if (userRow) {
-    userRow.Buddycalldate = format(date, "MM/dd/yyyy");
+    userRow.Buddycalldate = format(date, "MM/dd/yyyy HH:mm");
     userRow.State = "date set";
     await userRow.save();
   } else {

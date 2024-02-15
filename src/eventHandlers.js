@@ -23,7 +23,7 @@ const {
   saveBuddyCallDate,
   isUserAwaitingDate,
 } = require("./sheetsFunctions");
-const { notifyAdmin, parseDate } = require("./utils");
+const { notifyAdmins, parseDate, isValidDateWithTime } = require("./utils");
 
 async function handleMessages(message) {
   console.log(`Received message from ${message.author.id}: ${message.content}`);
@@ -33,13 +33,13 @@ async function handleMessages(message) {
       (ADMIN_IDS.includes(message.author.id) ||
         (await isUserOrBuddy(message.author.id)))
     ) {
-      const date = parseDate(message.content);
-      if (date) {
+      const date = new Date(message.content);
+      if (!isNaN(date.getTime()) && isValidDateWithTime(date)) {
         await saveBuddyCallDate(message.author.id, date);
         message.reply(`Thank You! Your buddy call has been set for ${date}`);
       } else {
         message.reply(
-          "Invalid date format. Please format the date like this: 'MM/DD/YYYY'."
+          "Invalid date format. Please format the date like this: 'MM/dd/yyyy HH:mm'."
         );
       }
     }
@@ -88,7 +88,7 @@ async function handleMessages(message) {
       message.channel.send("Done");
     }
 
-    if (message.content.startsWith("/getFeedback")) {
+    if (message.content.startsWith("!getFeedback")) {
       const taggedUsers = message.mentions.users; // This will give a collection of mentioned users
 
       if (taggedUsers.size === 0) {
@@ -150,7 +150,11 @@ async function handleMessages(message) {
     }
   } catch (error) {
     console.error(`Error in bot 'message' event: ${error.message}`);
-    notifyAdmin(`Error occurred in bot's message event: ${error.message}`);
+    notifyAdmins(
+      `Error occurred in bot's message event: ${error.message}`,
+      bot,
+      ADMIN_IDS
+    );
   }
 }
 
