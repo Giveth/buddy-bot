@@ -1,15 +1,21 @@
-const { ADMIN_ID } = require("./configurations");
+const { ADMIN_IDS } = require("./configurations");
+const { format, parse, isValid } = require("date-fns");
+
 // Helper function to notify admin
-async function notifyAdmin(errorMessage, bot, ADMIN_ID) {
-  try {
-    const adminUser = bot.users.cache.get(ADMIN_ID);
-    if (adminUser) {
-      await adminUser.send(errorMessage);
-    } else {
-      console.error("Couldn't notify the admin.");
+async function notifyAdmins(errorMessage, bot, ADMIN_IDS) {
+  for (const ADMIN_ID of ADMIN_IDS) {
+    try {
+      const adminUser = bot.users.cache.get(ADMIN_ID);
+      if (adminUser) {
+        await adminUser.send(errorMessage);
+      } else {
+        console.error(`Couldn't notify the admin with ID: ${ADMIN_ID}.`);
+      }
+    } catch (err) {
+      console.error(
+        `Error while notifying admin with ID: ${ADMIN_ID}: ${err.message}`
+      );
     }
-  } catch (err) {
-    console.error(`Error while notifying admin: ${err.message}`);
   }
 }
 
@@ -22,7 +28,22 @@ function shuffle(array) {
   return array;
 }
 
+function parseDate(dateString) {
+  const date = parse(dateString, "P", new Date());
+  if (isValid(date)) {
+    return format(date, "EEE MMM dd yyyy");
+  }
+  return null;
+}
+
+function isValidDateWithTime(date) {
+  const time = date.getHours() + date.getMinutes();
+  return time !== 0;
+}
+
 module.exports = {
   shuffle,
-  notifyAdmin,
+  notifyAdmins,
+  parseDate,
+  isValidDateWithTime,
 };
