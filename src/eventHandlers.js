@@ -22,6 +22,7 @@ const {
   dmBuddies,
   saveBuddyCallDate,
   isUserAwaitingDate,
+  announceBuddyCall,
 } = require("./sheetsFunctions");
 const { notifyAdmins, parseDate, isValidDateWithTime } = require("./utils");
 
@@ -36,6 +37,7 @@ async function handleMessages(message) {
       const date = new Date(message.content);
       if (!isNaN(date.getTime()) && isValidDateWithTime(date)) {
         await saveBuddyCallDate(message.author.id, date);
+        await announceBuddyCall(bot, message.author.id, date);
         message.reply(`Thank You! Your buddy call has been set for ${date}`);
       } else {
         message.reply(

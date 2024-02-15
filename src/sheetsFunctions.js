@@ -11,11 +11,13 @@ const {
   ADMIN_IDS,
   SELFREVIEW_FORM,
   ANNOUNCEMENT_CHANNEL_ID,
+  FEEDBACK_FORM,
 } = require("./configurations");
 
 // Use service account creds
 doc.useServiceAccountAuth(require("../google-sheets-credentials.json"));
 
+// Get all Contributors by Role from the Server
 async function updateContributorsSheet() {
   try {
     // Load the document and the Contributors sheet
@@ -81,6 +83,7 @@ async function updateContributorsSheet() {
   }
 }
 
+// DEPRECATED
 async function pairContributors() {
   try {
     await doc.loadInfo();
@@ -690,6 +693,20 @@ async function saveBuddyCallDate(userId, date) {
   }
 }
 
+async function announceBuddyCall(bot, contributor, date) {
+  const announcementChannel = bot.channels.cache.get(
+    process.env.ANNOUNCEMENT_CHANNEL_ID
+  );
+  if (!announcementChannel) {
+    console.error("ANNOUNCEMENT_CHANNEL_ID not found");
+    return;
+  }
+  const mention = `<@${contributor}>`;
+  const dateStr = date.toLocaleString(); // Format the date as a string
+  const message = `A new buddy call has been set for ${mention} on ${dateStr}. Please give some feedback! ${FEEDBACK_FORM}`;
+  await announcementChannel.send(message);
+}
+
 module.exports = {
   updateContributorsSheet,
   checkLastCallDate,
@@ -703,4 +720,5 @@ module.exports = {
   dmBuddies,
   isUserAwaitingDate,
   saveBuddyCallDate,
+  announceBuddyCall,
 };
