@@ -1,0 +1,23 @@
+{
+  "name": "buddy-bot",
+  "version": "1.0.0",
+  "description": "This Discord bot facilitates a buddy pairing system, allowing users to be paired up with buddies for calls and handling various administrative tasks within the buddy system.",
+  "main": "mainBot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/mainBot.js",
+    "start": "node src/mainBot.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "date-fns": "^3.3.1",
+    "discord.js": "^12.5.3",
+    "dotenv": "^16.3.1",
+    "google-spreadsheet": "^3.1.15",
+    "moment": "^2.29.4",
+    "node-cron": "^3.0.2",
+    "openai": "^4.6.0"
+  }
+}
