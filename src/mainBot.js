@@ -9,7 +9,7 @@ const { pairContributors, checkCalls } = require("./sheetsFunctions");
 // cron.schedule("0 0 1 */3 *", pairContributors);
 
 // Schedule the checkCalls function to run every hour
-cron.schedule("0 * * * *", checkCalls);
+// cron.schedule("0 * * * *", checkCalls);
 
 bot.on("ready", () => {
   console.log(`Logged in as ${bot.user.tag}!`);

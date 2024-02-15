@@ -5,79 +5,77 @@ const {
   MAIN_SHEET_NAME,
   PAIRINGS_SHEET_NAME,
   ANNOUNCEMENT_CHANNEL_ID,
-  ADMIN_ID,
+  ADMIN_IDS,
   FEEDBACK_FORM,
+  PREFIX,
 } = require("./configurations");
 const {
   updateContributorsSheet,
   pairContributors,
+  fetchAndSavePairings,
   processDate,
   checkCalls,
   checkLastCallDate,
   sendNotes,
   promptSelfReview,
+  fetchAndSavePairingsWithoutDate,
+  dmBuddies,
+  saveBuddyCallDate,
+  isUserAwaitingDate,
 } = require("./sheetsFunctions");
-const { notifyAdmin } = require("./utils");
+const { notifyAdmin, parseDate } = require("./utils");
 
 async function handleMessages(message) {
   console.log(`Received message from ${message.author.id}: ${message.content}`);
   try {
     if (
       message.channel.type === "dm" &&
-      userStates[message.author.id] &&
-      userStates[message.author.id].state === "awaitingDate"
+      (ADMIN_IDS.includes(message.author.id) ||
+        (await isUserOrBuddy(message.author.id)))
     ) {
-      const date = Date.parse(message.content);
-      if (!isNaN(date) && date > Date.now()) {
-        userStates[message.author.id].state = "awaitingTime";
-        userStates[message.author.id].date = date;
-        message.channel.send(
-          "Thanks for the date. Please provide the time for your buddy call as **HH:MM UTC** (e.g. 14:00)."
-        );
+      const date = parseDate(message.content);
+      if (date) {
+        await saveBuddyCallDate(message.author.id, date);
+        message.reply(`Thank You! Your buddy call has been set for ${date}`);
       } else {
-        message.channel.send(
-          "That doesn't seem like a valid future date. Please provide the date again or type 'cancel' to stop."
+        message.reply(
+          "Invalid date format. Please format the date like this: 'MM/DD/YYYY'."
         );
       }
     }
 
     if (
-      message.channel.type === "dm" &&
-      userStates[message.author.id] &&
-      userStates[message.author.id].state === "awaitingTime"
+      message.content === "!pairUp" &&
+      ADMIN_IDS.includes(message.author.id)
     ) {
-      const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-      const timeMatch = message.content.match(timeRegex);
-      if (timeMatch && userStates[message.author.id].date) {
-        const dateTime = new Date(userStates[message.author.id].date);
-        dateTime.setUTCHours(parseInt(timeMatch[1]));
-        dateTime.setUTCMinutes(parseInt(timeMatch[2]));
-        processDate(message, dateTime);
-      } else {
-        message.channel.send(
-          "That doesn't seem like a valid time. Please provide the time for your buddy call as **HH:MM UTC** (e.g. 14:00)."
-        );
-      }
-    }
-
-    if (
-      message.content === "!pairContributors" &&
-      message.author.id === ADMIN_ID
-    ) {
-      const pairs = await pairContributors();
+      const pairs = await fetchAndSavePairingsWithoutDate();
       const formattedPairs = pairs
         .map((pair) => pair.map((p) => p.name).join(" & "))
         .join(", ");
       message.channel.send(`New pairs: ${formattedPairs}`);
     }
 
-    if (message.content === "!fillSheet" && message.author.id === ADMIN_ID) {
+    if (message.content.startsWith("!dmBuddies")) {
+      const userId = message.content.split(" ")[1].replace(/<@|>/g, "");
+      if (!userId) {
+        return message.reply("You must provide a user ID!");
+      }
+      await dmBuddies(userId);
+    }
+
+    if (
+      message.content === "!fillSheet" &&
+      ADMIN_IDS.includes(message.author.id)
+    ) {
       message.channel.send("Contributors sheet is being updated!");
       await updateContributorsSheet();
       message.channel.send("Contributors sheet updated successfully!");
     }
 
-    if (message.content === "!selfReview" && message.author.id === ADMIN_ID) {
+    if (
+      message.content === "!selfReview" &&
+      ADMIN_IDS.includes(message.author.id)
+    ) {
       message.channel.send("Checking for contributors to self-review...");
       const updatedPairs = await promptSelfReview();
       if (updatedPairs.length > 0) {
@@ -119,7 +117,10 @@ async function handleMessages(message) {
       );
     }
 
-    if (message.content === "!checkDates" && message.author.id === ADMIN_ID) {
+    if (
+      message.content === "!checkDates" &&
+      ADMIN_IDS.includes(message.author.id)
+    ) {
       message.channel.send("Looking for due calls...");
       const updatedPairs = await checkLastCallDate();
       if (updatedPairs.length > 0) {
@@ -130,13 +131,19 @@ async function handleMessages(message) {
       message.channel.send("Done");
     }
 
-    if (message.content === "!checkCalls" && message.author.id === ADMIN_ID) {
+    if (
+      message.content === "!checkCalls" &&
+      ADMIN_IDS.includes(message.author.id)
+    ) {
       message.channel.send("Checking if recent calls happened");
       await checkCalls();
       message.channel.send("Done");
     }
 
-    if (message.content === "!askforNotes" && message.author.id === ADMIN_ID) {
+    if (
+      message.content === "!askforNotes" &&
+      ADMIN_IDS.includes(message.author.id)
+    ) {
       message.channel.send("Requesting notes from contributors");
       await sendNotes();
       message.channel.send("Done");

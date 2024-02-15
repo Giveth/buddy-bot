@@ -1,5 +1,6 @@
 const moment = require("moment");
-const { shuffle, notifyAdmin } = require("./utils");
+const { shuffle, notifyAdminss } = require("./utils");
+const { format } = require("date-fns");
 const {
   bot,
   doc,
@@ -7,7 +8,7 @@ const {
   MAIN_SHEET_NAME,
   PAIRINGS_SHEET_NAME,
   ROLE,
-  ADMIN_ID,
+  ADMIN_IDS,
   SELFREVIEW_FORM,
   ANNOUNCEMENT_CHANNEL_ID,
 } = require("./configurations");
@@ -72,7 +73,7 @@ async function updateContributorsSheet() {
     console.log("Contributors sheet updated successfully!");
   } catch (error) {
     console.error(`Error updating Contributors sheet: ${error.message}`);
-    await notifyAdmin(`Error updating Contributors sheet: ${error.message}`);
+    await notifyAdmins(`Error updating Contributors sheet: ${error.message}`);
   }
 }
 
@@ -116,15 +117,19 @@ async function pairContributors() {
               }. Please DM me with the date you set for your buddy call.`
             )
             .catch((error) => {
-              // If there's an error sending the DM, notify the admin
-              const adminUser = bot.users.cache.get(ADMIN_ID);
-              if (adminUser) {
-                adminUser.send(
-                  `Failed to send DM to user with ID: ${member.id}. Please notify them manually.`
-                );
-              } else {
-                console.error("Couldn't notify the admin.");
-              }
+              // If there's an error sending the DM, notify the admins
+              ADMIN_IDS.forEach((adminId) => {
+                const adminUser = bot.users.cache.get(adminId);
+                if (adminUser) {
+                  adminUser.send(
+                    `Failed to send DM to user with ID: ${member.id}. Please notify them manually.`
+                  );
+                } else {
+                  console.error(
+                    `Couldn't notify the admin with ID: ${adminId}.`
+                  );
+                }
+              });
             });
         } else {
           console.error(`Couldn't find user with ID: ${member.id}`);
@@ -146,8 +151,164 @@ async function pairContributors() {
     return pairs;
   } catch (error) {
     console.error(`Error in pairContributors function: ${error.message}`);
-    await notifyAdmin(
+    await notifyAdmins(
       `Error occurred while pairing contributors: ${error.message}`
+    );
+  }
+}
+
+async function fetchAndSavePairingsWithoutDate() {
+  try {
+    await doc.loadInfo();
+    const mainSheet = doc.sheetsByTitle[MAIN_SHEET_NAME];
+    const pairingSheet = doc.sheetsByTitle[PAIRINGS_SHEET_NAME];
+
+    const rows = await mainSheet.getRows();
+
+    const pairs = rows.map((row) => [
+      {
+        name: row.Names,
+        id: row.UserID,
+      },
+      {
+        name: row.Buddy,
+        id: row.BuddyID,
+      },
+    ]);
+
+    // Save the pairs back to the Pairings sheet without a date
+    for (const pair of pairs) {
+      await pairingSheet.addRow({
+        Pair: pair.map((p) => p.name).join(" & "),
+        ID1: pair[0].id,
+        ID2: pair[1] ? pair[1].id : "", // Handle odd numbers of contributors
+        State: "paired no date", // New column
+      });
+    }
+    return pairs;
+  } catch (error) {
+    console.error(
+      `Error in fetchAndSavePairingsWithoutDate function: ${error.message}`
+    );
+    await notifyAdmins(
+      `Error occurred while fetching and saving pairings without date: ${error.message}`
+    );
+  }
+}
+
+// DM users and their buddies to start the process
+async function dmBuddies(userId) {
+  await doc.loadInfo();
+  const mainSheet = doc.sheetsByTitle[MAIN_SHEET_NAME];
+  const rows = await mainSheet.getRows();
+
+  const userRow = rows.find((row) => row.UserID === userId);
+  if (!userRow) {
+    console.error(`Couldn't find user with ID: ${userId}`);
+    return;
+  }
+
+  const buddyRow = rows.find((row) => row.Names === userRow.Buddy);
+  if (!buddyRow) {
+    console.error(`Couldn't find buddy for user with ID: ${userId}`);
+    return;
+  }
+
+  const user = bot.users.cache.get(userRow.UserID);
+  const buddy = bot.users.cache.get(buddyRow.UserID);
+
+  if (user && buddy) {
+    try {
+      await user.send(
+        `Hey, heeey. Its that time again! Please set a date for your buddy call with ${buddyRow.Names} and send the date back to me.`
+      );
+      userRow.State = "awaitingDate";
+      await buddy.send(
+        `Hey, heeey. Its that time again! Please set a date for your buddy call with ${userRow.Names} so they can tell me`
+      );
+    } catch (error) {
+      console.error(
+        `Failed to send DM to user with ID: ${userId} or their buddy.`
+      );
+    }
+  } else {
+    console.error(
+      `Couldn't find Discord user for user with ID: ${userId} or their buddy.`
+    );
+  }
+}
+
+async function fetchAndSavePairings() {
+  try {
+    await doc.loadInfo();
+    const mainSheet = doc.sheetsByTitle[MAIN_SHEET_NAME];
+    const pairingSheet = doc.sheetsByTitle[PAIRINGS_SHEET_NAME];
+
+    const rows = await mainSheet.getRows();
+
+    const pairs = rows.map((row) => [
+      {
+        name: row.Names,
+        id: row.UserID,
+      },
+      {
+        name: row.Buddy,
+        id: row.BuddyID,
+      },
+    ]);
+
+    // Send DM to the contributors
+    for (const pair of pairs) {
+      for (const member of pair) {
+        const user = bot.users.cache.get(member.id); // Use the User ID to fetch the user
+        if (user) {
+          userStates[user.id] = {
+            state: "awaitingDate",
+            buddy: pair.find((p) => p.id !== member.id).name,
+          }; // Set the status of the buddy pair to awaiting a date
+          user
+            .send(
+              `Hey, your buddy has been chosen - it is: ${
+                pair.find((p) => p.id !== member.id).name
+              }. Please DM me with the date you set for your buddy call.`
+            )
+            .catch((error) => {
+              // If there's an error sending the DM, notify the admins
+              ADMIN_IDS.forEach((adminId) => {
+                const adminUser = bot.users.cache.get(adminId);
+                if (adminUser) {
+                  adminUser.send(
+                    `Failed to send DM to user with ID: ${member.id}. Please notify them manually.`
+                  );
+                } else {
+                  console.error(
+                    `Couldn't notify the admin with ID: ${adminId}.`
+                  );
+                }
+              });
+            });
+        } else {
+          console.error(`Couldn't find user with ID: ${member.id}`);
+        }
+      }
+    }
+
+    // Save the pairs back to the Pairings sheet with the current date
+    for (const pair of pairs) {
+      await pairingSheet.addRow({
+        Pair: pair.map((p) => p.name).join(" & "),
+        Date: new Date().toISOString().split("T")[0],
+        ID1: pair[0].id,
+        ID2: pair[1] ? pair[1].id : "", // Handle odd numbers of contributors
+        State: "paired no date", // New column
+        Buddycalldate: "", // New column
+      });
+    }
+    return pairs;
+  } catch (error) {
+    console.error(`Error in fetchAndSavePairings function: ${error.message}`);
+    await notifyAdmins(
+      `Error occurred while fetching and saving pairings: ${error.message}`
     );
   }
 }
@@ -181,7 +342,7 @@ async function checkLastCallDate() {
     return updatedPairs;
   } catch (error) {
     console.error(`Error in checkLastCallDate function: ${error.message}`);
-    await notifyAdmin(
+    await notifyAdmins(
       `Error occurred while checking last call dates: ${error.message}`
     );
     return [];
@@ -222,7 +383,7 @@ async function processDate(message, dateTime) {
     delete userStates[message.author.id]; // Reset their state
   } catch (error) {
     console.error(`Error in processDate function: ${error.message}`);
-    await notifyAdmin(
+    await notifyAdmins(
       `Error occurred while processing the date: ${error.message}`
     );
   }
@@ -281,7 +442,7 @@ async function promptSelfReview() {
     }
   } catch (error) {
     console.error(`Error in promptSelfReview function: ${error.message}`);
-    await notifyAdmin(
+    await notifyAdmins(
       `Error occurred while asking users for self-review: ${error.message}`
     );
   }
@@ -404,7 +565,7 @@ async function checkCalls() {
     }
   } catch (error) {
     console.error(`Error in checkCalls function: ${error.message}`);
-    await notifyAdmin(`Error occurred while checking calls: ${error.message}`);
+    await notifyAdmins(`Error occurred while checking calls: ${error.message}`);
   }
 }
 
@@ -471,16 +632,46 @@ async function sendNotes() {
     }
   } catch (error) {
     console.error(`Error in sendNotes function: ${error.message}`);
-    await notifyAdmin(`Error occurred while sending notes: ${error.message}`);
+    await notifyAdmins(`Error occurred while sending notes: ${error.message}`);
+  }
+}
+
+async function isUserAwaitingDate(userId) {
+  await doc.loadInfo();
+  const pairingsSheet = doc.sheetsByTitle[PAIRINGS_SHEET_NAME];
+  const rows = await pairingsSheet.getRows();
+  return rows.some((row) => row.State === "awaitingDate" && row.ID1 === userId);
+}
+
+async function saveBuddyCallDate(userId, date) {
+  await doc.loadInfo();
+  const pairingsSheet = doc.sheetsByTitle[PAIRINGS_SHEET_NAME];
+  const rows = await pairingsSheet.getRows();
+  const userRow = rows.find(
+    (row) => row.State === "awaitingDate" && row.ID1 === userId
+  );
+  if (userRow) {
+    userRow.Buddycalldate = format(date, "MM/dd/yyyy");
+    userRow.State = "date set";
+    await userRow.save();
+  } else {
+    console.error(
+      `Couldn't find user with ID: ${userId} in 'awaitingDate' state.`
+    );
   }
 }
 
 module.exports = {
   updateContributorsSheet,
   checkLastCallDate,
+  fetchAndSavePairings,
   pairContributors,
   processDate,
   checkCalls,
   sendNotes,
   promptSelfReview,
+  fetchAndSavePairingsWithoutDate,
+  dmBuddies,
+  isUserAwaitingDate,
+  saveBuddyCallDate,
 };
