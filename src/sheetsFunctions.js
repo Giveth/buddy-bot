@@ -424,44 +424,31 @@ async function promptSelfReview() {
     }
 
     const rows = await pairingsSheet.getRows();
-
-    const updatedPairs = [];
+    const selectedUsers = [];
 
     for (const row of rows) {
       if (row.State === "date set") {
-        // Assuming you have columns ID1 and ID2 for the user IDs of the pair
         const userId1 = row.ID1;
-        const userId2 = row.ID2;
-
         const messageContent = `Please fill out a self-review form for your upcoming buddy call:\n${SELFREVIEW_FORM}`;
 
         if (userId1) {
           const user1 = bot.users.cache.get(userId1);
+          const mention = `<@${userId1}>`;
           if (user1) {
             user1.send(messageContent).catch((error) => {
               console.error(
                 `Failed to send DM to user with ID: ${userId1}. Error: ${error.message}`
               );
             });
+            selectedUsers.push(mention);
           }
         }
 
-        if (userId2) {
-          const user2 = bot.users.cache.get(userId2);
-          if (user2) {
-            user2.send(messageContent).catch((error) => {
-              console.error(
-                `Failed to send DM to user with ID: ${userId2}. Error: ${error.message}`
-              );
-            });
-          }
-        }
-        row.State = "self-review requested";
+        row.State = "Review requested";
         await row.save();
-        updatedPairs.push(row.Pair);
       }
-      return updatedPairs;
     }
+    return selectedUsers;
   } catch (error) {
     console.error(`Error in promptSelfReview function: ${error.message}`);
     await notifyAdmins(

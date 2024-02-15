@@ -81,8 +81,9 @@ async function handleMessages(message) {
       message.channel.send("Checking for contributors to self-review...");
       const updatedPairs = await promptSelfReview();
       if (updatedPairs.length > 0) {
+        const updatedUsers = updatedPairs.map((pair) => pair.split("-")[0]); // Assuming pairs are formatted as 'ID1-ID2'
         message.channel.send(
-          `Prompted for selfReview: ${updatedPairs.join(", ")}`
+          `Prompted for selfReview: ${updatedUsers.join(", ")}`
         );
       } else {
         message.channel.send("No one was prompted.");
