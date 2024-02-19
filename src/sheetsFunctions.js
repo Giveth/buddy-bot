@@ -184,26 +184,20 @@ async function dmBuddies(userId) {
     return;
   }
 
-  const user = bot.users.cache.get(userRow.UserID);
-  const buddy = bot.users.cache.get(buddyRow.UserID);
+  try {
+    const user = await bot.users.fetch(userRow.UserID);
+    const buddy = await bot.users.fetch(buddyRow.UserID);
 
-  if (user && buddy) {
-    try {
-      await user.send(
-        `Hey, heeey. Its that time again! Please set a date for your buddy call with ${buddyRow.Names} and send the date back to me.`
-      );
-      userRow.State = "awaitingDate";
-      await buddy.send(
-        `Hey, heeey. Its that time again! Please set a date for your buddy call with ${userRow.Names} so they can tell me`
-      );
-    } catch (error) {
-      console.error(
-        `Failed to send DM to user with ID: ${userId} or their buddy.`
-      );
-    }
-  } else {
+    await user.send(
+      `Hey, heeey. Its that time again! Please set a date for your buddy call with ${buddyRow.Names} and send the date back to me.`
+    );
+    await buddy.send(
+      `Hey, heeey. Its that time again! Please set a date for your buddy call with ${userRow.Names} so they can tell me`
+    );
+    userRow.State = "awaitingDate";
+  } catch (error) {
     console.error(
-      `Couldn't find Discord user for user with ID: ${userId} or their buddy.`
+      `Failed to send DM to user with ID: ${userId} or their buddy. Error: ${error.message}`
     );
   }
 }

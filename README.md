@@ -89,7 +89,7 @@ This Discord bot facilitates a buddy pairing system, allowing users to be paired
 
 2. Run the bot inside a Docker container:
    ```bash
-   docker run --restart always your_bot_name
+   docker run -d --name your-bot-name --restart always your_image_name
    ```
 
 ## Permissions:
