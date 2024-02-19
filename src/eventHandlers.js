@@ -57,13 +57,17 @@ async function handleMessages(message) {
         .join(", ");
       message.channel.send(`New pairs: ${formattedPairs}`);
     }
-
     if (message.content.startsWith("!dmBuddies")) {
       const userId = message.content.split(" ")[1].replace(/<@|>/g, "");
       if (!userId) {
         return message.reply("You must provide a user ID!");
       }
-      await dmBuddies(userId);
+      const success = await dmBuddies(userId);
+      if (success) {
+        message.reply("DMs sent successfully!");
+      } else {
+        message.reply("There was an error sending the DMs.");
+      }
     }
 
     if (

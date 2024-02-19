@@ -188,15 +188,16 @@ async function dmBuddies(userId) {
     const user = await bot.users.fetch(userRow.UserID);
     const buddy = await bot.users.fetch(buddyRow.UserID);
 
-    await user.send(
-      `Hey, heeey. Its that time again! Please set a date for your buddy call with ${buddyRow.Names} and send the date back to me.`
-    );
+    await user.send(`Hey, heeey. Its that time again! Please set a date for your buddy call with ${buddyRow.Names} and send the date back to me.`);
     userRow.State = "awaitingDate";
-    await userRow.save(); // Save the changes to the sheet
+    await userRow.save();
 
-    await buddy.send(
-      `Hey, heeey. Its that time again! Please set a date for your buddy call with ${userRow.Names} so they can tell me`
-    );
+    await buddy.send(`Hey, heeey. Its that time again! Please set a date for your buddy call with ${userRow.Names} so they can tell me`);
+
+    return true; // Return true if the DMs were sent successfully
+  } catch (error) {
+    console.error(`Failed to send DM to user with ID: ${userId} or their buddy. Error: ${error.message}`);
+    return false; // Return false if there was an error
   } catch (error) {
     console.error(
       `Failed to send DM to user with ID: ${userId} or their buddy. Error: ${error.message}`
