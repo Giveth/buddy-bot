@@ -26,7 +26,6 @@ const {
   isUserInPairings,
 } = require("./sheetsFunctions");
 const { notifyAdmins, parseDate, isValidDateWithTime } = require("./utils");
-const timezone = "CET"; // Replace with your desired time zone
 
 async function handleMessages(message) {
   console.log(`Received message from ${message.author.id}: ${message.content}`);
@@ -36,9 +35,7 @@ async function handleMessages(message) {
       (ADMIN_IDS.includes(message.author.id) ||
         (await isUserInPairings(message.author.id)))
     ) {
-      const date = moment
-        .tz(message.content, "MM/DD/YYYY HH:mm", timezone)
-        .toDate();
+      const date = new Date(message.content);
       if (!isNaN(date.getTime()) && isValidDateWithTime(date)) {
         await saveBuddyCallDate(message.author.id, date);
         await announceBuddyCall(bot, message.author.id, date);
