@@ -23,6 +23,7 @@ const {
   saveBuddyCallDate,
   isUserAwaitingDate,
   announceBuddyCall,
+  isUserInPairings,
 } = require("./sheetsFunctions");
 const { notifyAdmins, parseDate, isValidDateWithTime } = require("./utils");
 
@@ -32,7 +33,7 @@ async function handleMessages(message) {
     if (
       message.channel.type === "dm" &&
       (ADMIN_IDS.includes(message.author.id) ||
-        (await isUserOrBuddy(message.author.id)))
+        (await isUserInPairings(message.author.id)))
     ) {
       const date = new Date(message.content);
       if (!isNaN(date.getTime()) && isValidDateWithTime(date)) {

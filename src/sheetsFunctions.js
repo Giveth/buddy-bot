@@ -694,6 +694,12 @@ async function announceBuddyCall(bot, contributor, date) {
   await announcementChannel.send(message);
 }
 
+async function isUserInPairings(userId) {
+  const pairingsSheet = doc.sheetsByTitle[PAIRINGS_SHEET_NAME];
+  const rows = await pairingsSheet.getRows();
+  return rows.some((row) => row.ID1 === userId);
+}
+
 module.exports = {
   updateContributorsSheet,
   checkLastCallDate,
@@ -708,4 +714,5 @@ module.exports = {
   isUserAwaitingDate,
   saveBuddyCallDate,
   announceBuddyCall,
+  isUserInPairings,
 };
