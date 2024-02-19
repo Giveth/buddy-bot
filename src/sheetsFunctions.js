@@ -192,6 +192,8 @@ async function dmBuddies(userId) {
       `Hey, heeey. Its that time again! Please set a date for your buddy call with ${buddyRow.Names} and send the date back to me.`
     );
     userRow.State = "awaitingDate";
+    await userRow.save(); // Save the changes to the sheet
+
     await buddy.send(
       `Hey, heeey. Its that time again! Please set a date for your buddy call with ${userRow.Names} so they can tell me`
     );
