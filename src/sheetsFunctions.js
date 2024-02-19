@@ -191,10 +191,10 @@ async function dmBuddies(userId) {
     await user.send(
       `Hey, heeey. Its that time again! Please set a date for your buddy call with ${buddyRow.Names} and send the date back to me.`
     );
+    userRow.State = "awaitingDate";
     await buddy.send(
       `Hey, heeey. Its that time again! Please set a date for your buddy call with ${userRow.Names} so they can tell me`
     );
-    userRow.State = "awaitingDate";
   } catch (error) {
     console.error(
       `Failed to send DM to user with ID: ${userId} or their buddy. Error: ${error.message}`
