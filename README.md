@@ -51,22 +51,24 @@ This Discord bot facilitates a buddy pairing system, allowing users to be paired
 - **Updating the Contributors Sheet**:
 
   1. Admin users can type `!fillSheet` to update the contributors sheet with all people who possess the "Contributor" role.
-  2. `!pairUp` - Automate the creation of "buddy pairings" from a list of names and User IDs.
+  2. `!pairUp` (ADMIN only) - Automate the creation of "buddy pairings" from a list of names and User IDs.
 
 - **Pairing Contributors**:
   ~~Admin users can type `!pairContributors` in any channel to initiate the **pairing process**.~~
   Pairings are done **manually** for now.
-- `!dmBuddy @Username` - Start the buddy feedback process for a **pair of user (contributor) and buddy**:
+- `!dmBuddy @Username` (ADMIN only) - Start the buddy feedback process for a **pair of user (contributor) and buddy**:
   1. The contributor and buddy get a DM that its time for their buddy feedback call and the contributor is asked for the date and time. The state is set to `awaitingDate`.
   1. Once the date and time are submitted to the buddy-bot via DM (by the contributor) the state is set to `date set` and the date is recorded in the google sheet.
   1. A message is posted to the `ANNOUNCEMENT_CHANNEL` that a buddy call is about to happen and is asking the community for feedback.
-- `!selfReview` - Check the backend sheet for buddy pairs with the state `date set` and send the "self review form" to them. Their state is set to `Review requested`
-- `!getFeedback @Username` - Buddy Bot sends a DM to @Username and invite them to fill out the "feedback form"
+- `!selfReview` (ADMIN only) - Check the backend sheet for buddy pairs with the state `date set` and send the "self review form" to them. Their state is set to `Review requested`
+- `!DMselfReview @Username1 @Username2` (ADMIN only) - Buddy Bot sends a DM to @Username1&2 and invites them to fill out the "Self Review form"
+
+- `!getFeedback @Username1 @Username2` - Buddy Bot sends a DM to @Username1&2 and invites them to fill out the "feedback form"
 
 ### WIP
 
-- `!checkDates` - Check for calls that occurred over 10 weeks ago
-- `!checkCalls` - Check if any calls happened recently and if yes ask for the notes
+- `!checkDates` (ADMIN only) - Check for calls that occurred over 10 weeks ago
+- `!checkCalls` (ADMIN only) - Check if any calls happened recently and if yes ask for the notes
   ~~- `!askForNotes` - Send a DM asking for the buddy-call notes~~
 
 ## The Pairing process
