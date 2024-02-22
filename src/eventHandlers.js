@@ -96,6 +96,38 @@ async function handleMessages(message) {
       message.channel.send("Done");
     }
 
+    if (
+      message.content === "!DMselfReview" &&
+      ADMIN_IDS.includes(message.author.id)
+    ) {
+      const taggedUsers = message.mentions.users; // This will give a collection of mentioned users
+
+      if (taggedUsers.size === 0) {
+        message.reply(
+          "Please mention at least one user to request feedback from."
+        );
+        return;
+      }
+
+      // Send DMs to all tagged users
+      taggedUsers.forEach((user) => {
+        user
+          .send(
+            `Hey ${user.username}, ${message.author.username} requests you to fill out the self review form:\n${SELFREVIEW_FORM}`
+          )
+          .catch((error) => {
+            console.error(
+              `Failed to send DM to user ${user.username}. Error: ${error.message}`
+            );
+          });
+      });
+
+      // Send a confirmation message to the command issuer
+      message.channel.send(
+        "Self review requests have been sent to the tagged users!"
+      );
+    }
+
     if (message.content.startsWith("!getFeedback")) {
       const taggedUsers = message.mentions.users; // This will give a collection of mentioned users
 
