@@ -97,14 +97,14 @@ async function handleMessages(message) {
     }
 
     if (
-      message.content === "!DMselfReview" &&
+      message.content.startsWith("!DMselfReview") &&
       ADMIN_IDS.includes(message.author.id)
     ) {
       const taggedUsers = message.mentions.users; // This will give a collection of mentioned users
 
       if (taggedUsers.size === 0) {
         message.reply(
-          "Please mention at least one user to request feedback from."
+          "Please mention at least one user to request self review from."
         );
         return;
       }
