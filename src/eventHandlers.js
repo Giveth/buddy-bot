@@ -8,6 +8,7 @@ const {
   ADMIN_IDS,
   FEEDBACK_FORM,
   PREFIX,
+  SELFREVIEW_FORM,
 } = require("./configurations");
 const {
   updateContributorsSheet,
