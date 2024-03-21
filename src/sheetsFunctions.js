@@ -680,6 +680,7 @@ async function saveBuddyCallDate(userId, date) {
 }
 
 async function announceBuddyCall(bot, contributor, date) {
+  await doc.loadInfo();
   const announcementChannel = bot.channels.cache.get(
     process.env.ANNOUNCEMENT_CHANNEL_ID
   );
@@ -694,9 +695,97 @@ async function announceBuddyCall(bot, contributor, date) {
 }
 
 async function isUserInPairings(userId) {
+  await doc.loadInfo();
   const pairingsSheet = doc.sheetsByTitle[PAIRINGS_SHEET_NAME];
   const rows = await pairingsSheet.getRows();
   return rows.some((row) => row.ID1 === userId);
+}
+
+async function sendDocLinkToBuddy(userId) {
+  await doc.loadInfo();
+  const pairingsSheet = doc.sheetsByTitle[PAIRINGS_SHEET_NAME];
+  const rows = await pairingsSheet.getRows();
+
+  for (const row of rows) {
+    if (row.ID1 === userId) {
+      const docLink = row.Doclink;
+      const buddyId = row.ID2;
+
+      if (docLink && buddyId) {
+        try {
+          const buddy = await bot.users.fetch(buddyId);
+          await buddy.send(
+            `Here is the link to the "Feedback Doc" for your upcoming buddy call: ${docLink}`
+          );
+        } catch (error) {
+          console.error(
+            `Failed to send DM to user with ID: ${buddyId}. Error: ${error.message}`
+          );
+        }
+      }
+    }
+  }
+}
+
+async function checkBuddyCallDates(bot) {
+  try {
+    await doc.loadInfo();
+    const pairingsSheet = doc.sheetsByTitle[PAIRINGS_SHEET_NAME];
+
+    if (!pairingsSheet) {
+      console.error("Couldn't find the 'Pairings' sheet.");
+      return [];
+    }
+
+    const rows = await pairingsSheet.getRows();
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0); // Set the time to 00:00:00 for comparison
+
+    const updatedContributors = [];
+    for (const row of rows) {
+      if (!row.Buddycalldate) {
+        continue; // Skip this iteration if Buddycalldate is empty
+      }
+
+      const buddyCallDate = moment(
+        row.Buddycalldate,
+        "MM/DD/YYYY HH:mm"
+      ).toDate();
+      buddyCallDate.setHours(0, 0, 0, 0); // Set the time to 00:00:00 for comparison
+
+      if (+buddyCallDate === +tomorrow) {
+        await sendDocLinkToBuddy(row.ID1);
+
+        // Send a status message to the ANNOUNCEMENT_CHANNEL_ID
+        const channel = bot.channels.cache.get(ANNOUNCEMENT_CHANNEL_ID);
+        if (channel) {
+          channel.send(
+            `The link ${row.Doclink} has been sent for tomorrows buddy call between **${row.Pair}**.`
+          );
+        }
+
+        updatedContributors.push(row.ID1);
+      }
+    }
+
+    if (updatedContributors.length === 0) {
+      console.log(
+        `The function checkBuddyCallDates ran, but did not find any upcoming reviews for ${tomorrow.toDateString()}.`
+      );
+    }
+
+    return updatedContributors;
+  } catch (error) {
+    console.error(`Error in checkBuddyCallDates function: ${error.message}`);
+    await notifyAdmins(
+      `Error occurred while checking buddy call dates: ${error.message}`,
+      bot,
+      ADMIN_IDS
+    );
+    return [];
+  }
 }
 
 module.exports = {
@@ -714,4 +803,5 @@ module.exports = {
   saveBuddyCallDate,
   announceBuddyCall,
   isUserInPairings,
+  checkBuddyCallDates,
 };
