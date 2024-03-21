@@ -12,6 +12,7 @@ const ADMIN_IDS = JSON.parse(process.env.ADMIN_IDS);
 const ROLE = process.env.ROLE;
 const SELFREVIEW_FORM = process.env.SELFREVIEW_FORM;
 const FEEDBACK_FORM = process.env.FEEDBACK_FORM;
+const LEADER_FEEDBACK_FORM = process.env.LEADER_FEEDBACK_FORM;
 
 const bot = new Client();
 const doc = new GoogleSpreadsheet(SPREADSHEET_ID);
@@ -28,6 +29,7 @@ module.exports = {
   DISCORD_TOKEN,
   SELFREVIEW_FORM,
   FEEDBACK_FORM,
+  LEADER_FEEDBACK_FORM,
   ADMIN_IDS,
   ROLE,
 };

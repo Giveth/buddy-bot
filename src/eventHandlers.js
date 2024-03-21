@@ -7,6 +7,7 @@ const {
   ANNOUNCEMENT_CHANNEL_ID,
   ADMIN_IDS,
   FEEDBACK_FORM,
+  LEADER_FEEDBACK_FORM,
   PREFIX,
   SELFREVIEW_FORM,
 } = require("./configurations");
@@ -144,6 +145,94 @@ async function handleMessages(message) {
         user
           .send(
             `Hey ${user.username}, ${message.author.username} wants to get feedback from you. Please fill out the feedback form:\n${FEEDBACK_FORM}`
+          )
+          .catch((error) => {
+            console.error(
+              `Failed to send DM to user ${user.username}. Error: ${error.message}`
+            );
+          });
+      });
+
+      // Send a confirmation message to the command issuer
+      message.channel.send(
+        "Feedback requests have been sent to the tagged users!"
+      );
+    }
+
+    if (message.content.startsWith("!adminFeedback")) {
+      const args = message.content.split(" ");
+      const feedbackForUsername = args[1]; // The user that the feedback is for
+
+      // Check if the command issuer is an admin
+      if (!message.member.hasPermission("ADMINISTRATOR")) {
+        message.reply("You must be an admin to use this command!");
+        return;
+      }
+
+      // Check if a username was provided
+      if (!feedbackForUsername) {
+        message.reply("You must provide a username!");
+        return;
+      }
+
+      const taggedUsers = message.mentions.users; // This will give a collection of mentioned users
+
+      if (taggedUsers.size === 0) {
+        message.reply(
+          "Please mention at least one user to request feedback from."
+        );
+        return;
+      }
+
+      // Send DMs to all tagged users
+      taggedUsers.forEach((user) => {
+        user
+          .send(
+            `Hey ${user.username}, please give contributor feedback for ${feedbackForUsername}. Please fill out the feedback form:\n${FEEDBACK_FORM}`
+          )
+          .catch((error) => {
+            console.error(
+              `Failed to send DM to user ${user.username}. Error: ${error.message}`
+            );
+          });
+      });
+
+      // Send a confirmation message to the command issuer
+      message.channel.send(
+        "Feedback requests have been sent to the tagged users!"
+      );
+    }
+
+    if (message.content.startsWith("!leaderFeedback")) {
+      const args = message.content.split(" ");
+      const feedbackForUsername = args[1]; // The user that the feedback is for
+
+      // Check if the command issuer is an admin
+      if (!message.member.hasPermission("ADMINISTRATOR")) {
+        message.reply("You must be an admin to use this command!");
+        return;
+      }
+
+      // Check if a username was provided
+      if (!feedbackForUsername) {
+        message.reply("You must provide a username!");
+        return;
+      }
+
+      const taggedUsers = message.mentions.users; // This will give a collection of mentioned users
+
+      if (taggedUsers.size === 0) {
+        message.reply(
+          "Please mention at least one user to request feedback from."
+        );
+        return;
+      }
+
+      // Send DMs to all tagged users
+      taggedUsers.forEach((user) => {
+        user
+          .send(
+            `Hey ${user.username}, please give leadership feedback for ${feedbackForUsername}. Please fill out the feedback form:\n${LEADER_FEEDBACK_FORM}`
           )
           .catch((error) => {
             console.error(
