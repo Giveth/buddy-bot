@@ -72,7 +72,7 @@ This Discord bot facilitates a buddy pairing system, allowing users to be paired
 - `!getFeedback @Username1 @Username2` - Buddy Bot sends a DM to @Username1&2 and invites them to fill out the "feedback form"
 
 **CRON jobs**
-- **once a day**, buddy-bot will check the *Buddycalldate*-column for **calls scheduled for the following day**. If it discovers a call to be scheduled it will **send** the relevant *Doclink* to the respective buddy
+- **once a day**, buddy-bot will check the *Buddycalldate*-column for **calls scheduled for the following day**. If it discovers a call to be scheduled it will **send** the relevant *Doclink* to the respective buddy. A message is sent to *ANNOUNCEMENT_CHANNEL* detailing the buddy pair that got notified.
 
 ### WIP
 
