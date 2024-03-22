@@ -65,8 +65,8 @@ This Discord bot facilitates a buddy pairing system, allowing users to be paired
 **Sending out typeforms with buddy-bot**
 - `!selfReview` (ADMIN only) - Check the backend sheet for buddy pairs with the state `date set` and send the "self review form" to them. Their state is set to `Review requested`
 - `!DMselfReview @Username1 @Username2` (ADMIN only) - Buddy Bot sends a DM to @Username1&2 and invites them to fill out the "Self Review form"
-- `!adminFeedback @Contributor @Username1 @Username2` (ADMIN only) - Buddy Bot sends a DM to @Username1&2 and invites them to fill out the "feedback form" **for** the **Contributor**
-- `!leaderFeedback @Leader @Username1 @Username2` (ADMIN only) - Buddy Bot sends a DM to @Username1&2 and invites them to fill out the "leader feedback form" **for** the **Leader**
+- `!adminFeedback @Contributor @Username1 @Username2` (ADMIN only) - Buddy Bot sends a DM to @Username1&2 and invites them to fill out the "feedback form" **for** the **@Contributor**
+- `!leaderFeedback @Leader @Username1 @Username2` (ADMIN only) - Buddy Bot sends a DM to @Username1&2 and invites them to fill out the "leader feedback form" **for** the **@Leader**
 
 **Contributor commands**
 - `!getFeedback @Username1 @Username2` - Buddy Bot sends a DM to @Username1&2 and invites them to fill out the "feedback form"
