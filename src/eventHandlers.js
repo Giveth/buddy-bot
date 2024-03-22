@@ -272,7 +272,9 @@ async function handleMessages(message) {
       console.log("Checking if recent calls happened");
       const pair = await checkCalls();
       if (pair) {
-        message.channel.send(`I asked ${pair} if their buddy call took place!`);
+        message.channel.send(
+          `${pair} reported that their buddy call happened!`
+        );
       }
     }
 
