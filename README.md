@@ -24,9 +24,9 @@ This Discord bot facilitates a buddy pairing system, allowing users to be paired
 3. **Environment Variables**:
    Copy `.env.template` to `.env` set all the needed values
 
-4. **Run the Bot**:
+4. **Run the Bot with hot reloading**:
    ```bash
-   node bot.js
+   npm run dev
    ```
 
 ### Discord Developer Portal Setup:
