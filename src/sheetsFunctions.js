@@ -166,6 +166,14 @@ async function pairContributors() {
   }
 }
 
+async function getUserState(userId) {
+  await doc.loadInfo();
+  const mainSheet = doc.sheetsByTitle[MAIN_SHEET_NAME];
+  const rows = await mainSheet.getRows();
+  const userRow = rows.find((row) => row.UserID === userId);
+  return userRow ? userRow.State : null;
+}
+
 // DM users and their buddies to start the process
 async function dmBuddies(userId) {
   await doc.loadInfo();
@@ -191,12 +199,13 @@ async function dmBuddies(userId) {
     await user.send(
       `Hey, heeey. Its that time again! Please set a date for your buddy call with ${buddyRow.Names} and send the date back to me.`
     );
-    userRow.State = "awaitingDate";
-    await userRow.save();
 
     await buddy.send(
       `Hey, heeey. Its that time again! Please set a date for your buddy call with ${userRow.Names} so they can tell me`
     );
+
+    userRow.State = "awaitingDate";
+    await userRow.save();
 
     return true; // Return true if the DMs were sent successfully
   } catch (error) {
@@ -442,9 +451,6 @@ async function promptSelfReview() {
             selectedUsers.push(mention);
           }
         }
-
-        row.State = "Review requested";
-        await row.save();
       }
     }
     return selectedUsers;
@@ -459,6 +465,8 @@ async function promptSelfReview() {
 }
 
 async function checkCalls() {
+  let pairAsked = null;
+
   try {
     await doc.loadInfo();
     const pairingSheet = doc.sheetsByTitle[PAIRINGS_SHEET_NAME];
@@ -467,110 +475,72 @@ async function checkCalls() {
     const oneHourAgo = moment().subtract(1, "hour");
 
     for (const row of rows) {
-      const callDateTime = moment(row.Buddycalldate, "MM/DD/YYYY HH:mm");
-      console.log(`Call date time: ${callDateTime.format()}`);
-      if (row.State === "date set" && callDateTime <= oneHourAgo) {
-        console.log(`Call overdue for ${row.Pair} since ${row.Buddycalldate}`);
+      // Skip if Buddycalldate is empty
+      if (!row.Buddycalldate) {
+        continue;
+      }
 
-        // Send DM to both members of the pair
-        const user1 = bot.users.cache.get(row.ID1);
+      const callDateTime = moment(row.Buddycalldate, "MM/DD/YYYY HH:mm");
+      if (row.State === "date set" && callDateTime <= oneHourAgo) {
+        // Send DM to the user with ID2
         const user2 = bot.users.cache.get(row.ID2);
 
-        if (user1) {
-          user1.send(
-            "Did your buddy call with " +
-              row.Pair.split(" & ")[1] +
-              " take place?"
-          );
-          const filter = (m) =>
-            m.author.id === row.ID1 &&
-            (m.content.toLowerCase() === "yes" ||
-              m.content.toLowerCase() === "no");
-          const collector = user1.dmChannel.createMessageCollector(filter, {
-            time: 60000,
-          });
-          collector.on("collect", async (m) => {
-            if (m.content.toLowerCase() === "yes") {
-              if (user2)
-                user2.send(
-                  "Your buddy confirmed the call with " +
-                    row.Pair.split(" & ")[0] +
-                    " happened."
-                );
-              row.State = "DONE";
-              row.Lastcall = moment().format("MM/DD/YYYY");
-              await row.save();
-              await sendNotes();
-            } else if (m.content.toLowerCase() === "no") {
-              if (user2)
-                user2.send(
-                  "Your buddy confirmed the call with " +
-                    row.Pair.split(" & ")[0] +
-                    " didn't happen."
-                );
-              row.State = "date set";
-              await row.save();
-            }
-            collector.stop();
-          });
-          collector.on("end", async (collected, reason) => {
-            console.log(`Collected ${collected.size} messages`);
-            if (reason === "time") {
-              await user1.send(
-                "The process has expired, please DM @nicbals with the info I requested"
-              );
-            }
-          });
-        }
-
         if (user2) {
-          user2.send(
+          let dmChannel = user2.dmChannel;
+          if (!dmChannel) {
+            dmChannel = await user2.createDM();
+          }
+
+          dmChannel.send(
             "Did your buddy call with " +
               row.Pair.split(" & ")[0] +
               " take place?"
           );
+          row.State = "call happened?";
+          await row.save();
+
           const filter = (m) =>
             m.author.id === row.ID2 &&
             (m.content.toLowerCase() === "yes" ||
               m.content.toLowerCase() === "no");
-          const collector = user2.dmChannel.createMessageCollector(filter, {
-            time: 60000,
-          });
-          collector.on("collect", async (m) => {
-            if (m.content.toLowerCase() === "yes") {
-              if (user1)
-                user1.send(
-                  "Your buddy confirmed the call with " +
-                    row.Pair.split(" & ")[1] +
-                    " happened."
-                );
-              row.State = "DONE";
-              row.Lastcall = moment().format("MM/DD/YYYY");
-              await row.save();
-              await sendNotes();
-            } else if (m.content.toLowerCase() === "no") {
-              if (user1)
-                user1.send(
-                  "Your buddy confirmed the call with " +
-                    row.Pair.split(" & ")[1] +
-                    " did not happen."
-                );
-              row.State = "date set";
-              await row.save();
-            }
-            collector.stop();
-          });
-          collector.on("end", async (collected, reason) => {
-            console.log(`Collected ${collected.size} messages`);
-            if (reason === "time") {
-              await user2.send(
-                "The process has expired, please DM @nicbals with the info I requested."
-              );
-            }
+
+          // Wrap the message collector in a new Promise and await it
+          await new Promise((resolve) => {
+            const collector = dmChannel.createMessageCollector(filter, {
+              time: 60000,
+            });
+
+            collector.on("collect", async (m) => {
+              if (m.content.toLowerCase() === "yes") {
+                row.State = "DONE!";
+                row.Lastcall = moment().format("MM/DD/YYYY");
+                await row.save();
+                pairAsked = row.Pair; // Store the pair that was asked if their call ended
+              } else if (m.content.toLowerCase() === "no") {
+                row.State = "date set";
+                await row.save();
+                const admin = bot.users.cache.get(ADMIN_IDS[0]);
+                if (admin) {
+                  admin.send(
+                    `Manual intervention required for pair: ${row.Pair}`
+                  );
+                }
+              } else {
+                user2.send("Please respond with either 'yes' or 'no'.");
+              }
+              collector.stop();
+            });
+
+            collector.on("end", async (collected, reason) => {
+              console.log(`Collected ${collected.size} messages`);
+              if (reason === "time") {
+                // Restart the collector
+                collector.resetTimer();
+              }
+              resolve(); // Resolve the Promise when the collector ends
+            });
           });
         }
-      } else {
-        console.log(`No calls overdue`);
       }
     }
   } catch (error) {
@@ -581,6 +551,8 @@ async function checkCalls() {
       ADMIN_IDS
     );
   }
+
+  return pairAsked; // Return the pair that was asked if their call ended, or null if no buddy calls took place
 }
 
 async function sendNotes() {
@@ -804,4 +776,5 @@ module.exports = {
   announceBuddyCall,
   isUserInPairings,
   checkBuddyCallDates,
+  getUserState,
 };
