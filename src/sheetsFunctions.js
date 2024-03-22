@@ -512,8 +512,9 @@ async function checkCalls() {
 
             collector.on("collect", async (m) => {
               if (m.content.toLowerCase() === "yes") {
-                row.State = "DONE!";
+                row.State = "paired no date";
                 row.Lastcall = moment().format("MM/DD/YYYY");
+                row.Buddycalldate = "";
                 await row.save();
                 pairAsked = row.Pair; // Store the pair that was asked if their call ended
               } else if (m.content.toLowerCase() === "no") {
