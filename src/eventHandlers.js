@@ -26,6 +26,7 @@ const {
   isUserAwaitingDate,
   announceBuddyCall,
   isUserInPairings,
+  getUserState,
 } = require("./sheetsFunctions");
 const { notifyAdmins, parseDate, isValidDateWithTime } = require("./utils");
 
@@ -37,15 +38,18 @@ async function handleMessages(message) {
       (ADMIN_IDS.includes(message.author.id) ||
         (await isUserInPairings(message.author.id)))
     ) {
-      const date = new Date(message.content);
-      if (!isNaN(date.getTime()) && isValidDateWithTime(date)) {
-        await saveBuddyCallDate(message.author.id, date);
-        await announceBuddyCall(bot, message.author.id, date);
-        message.reply(`Thank You! Your buddy call has been set for ${date}`);
-      } else {
-        message.reply(
-          "Invalid date format. Please format the date like this: 'MM/dd/yyyy HH:mm'."
-        );
+      const userState = await getUserState(message.author.id);
+      if (userState === "awaitingDate") {
+        const date = new Date(message.content);
+        if (!isNaN(date.getTime()) && isValidDateWithTime(date)) {
+          await saveBuddyCallDate(message.author.id, date);
+          await announceBuddyCall(bot, message.author.id, date);
+          message.reply(`Thank You! Your buddy call has been set for ${date}`);
+        } else {
+          message.reply(
+            "Invalid date format. Please format the date like this: 'MM/dd/yyyy HH:mm'."
+          );
+        }
       }
     }
 
@@ -265,9 +269,11 @@ async function handleMessages(message) {
       message.content === "!checkCalls" &&
       ADMIN_IDS.includes(message.author.id)
     ) {
-      message.channel.send("Checking if recent calls happened");
-      await checkCalls();
-      message.channel.send("Done");
+      console.log("Checking if recent calls happened");
+      const pair = await checkCalls();
+      if (pair) {
+        message.channel.send(`I asked ${pair} if their buddy call took place!`);
+      }
     }
 
     if (

@@ -61,9 +61,7 @@ This Discord bot facilitates a buddy pairing system, allowing users to be paired
   1. The contributor and buddy get a DM that its time for their buddy feedback call and the contributor is asked for the date and time. The state is set to `awaitingDate`.
   1. Once the date and time are submitted to the buddy-bot via DM (by the contributor) the state is set to `date set` and the date is recorded in the google sheet.
   1. A message is posted to the `ANNOUNCEMENT_CHANNEL` that a buddy call is about to happen and is asking the community for feedback.
-
-**Sending out typeforms with buddy-bot**
-- `!selfReview` (ADMIN only) - Check the backend sheet for buddy pairs with the state `date set` and send the "self review form" to them. Their state is set to `Review requested`
+- `!selfReview` (ADMIN only) - Check the backend sheet for buddy pairs with the state `date set` and send the "self review form" to them.
 - `!DMselfReview @Username1 @Username2` (ADMIN only) - Buddy Bot sends a DM to @Username1&2 and invites them to fill out the "Self Review form"
 - `!adminFeedback @Contributor @Username1 @Username2` (ADMIN only) - Buddy Bot sends a DM to @Username1&2 and invites them to fill out the "feedback form" **for** the **@Contributor**
 - `!leaderFeedback @Leader @Username1 @Username2` (ADMIN only) - Buddy Bot sends a DM to @Username1&2 and invites them to fill out the "leader feedback form" **for** the **@Leader**

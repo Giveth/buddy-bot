@@ -13,7 +13,9 @@ const {
 // cron.schedule("0 0 1 */3 *", pairContributors);
 
 // Schedule the checkCalls function to run every hour
-// cron.schedule("0 * * * *", checkCalls);
+cron.schedule("0 6 * * *", () => {
+  checkCalls(bot);
+});
 
 // Schedule the checkBuddyCallDates function to run every day at 06:00
 cron.schedule("0 6 * * *", () => {
