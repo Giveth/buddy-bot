@@ -13,7 +13,7 @@ const {
 // cron.schedule("0 0 1 */3 *", pairContributors);
 
 // Schedule the checkCalls function to run every hour
-cron.schedule("0 6 * * *", () => {
+cron.schedule("0 * * * *", () => {
   checkCalls(bot);
 });
 
