@@ -24,9 +24,9 @@ This Discord bot facilitates a buddy pairing system, allowing users to be paired
 3. **Environment Variables**:
    Copy `.env.template` to `.env` set all the needed values
 
-4. **Run the Bot**:
+4. **Run the Bot with hot reloading**:
    ```bash
-   node bot.js
+   npm run dev
    ```
 
 ### Discord Developer Portal Setup:
@@ -48,22 +48,29 @@ This Discord bot facilitates a buddy pairing system, allowing users to be paired
 
 ## Admin commands:
 
-- **Updating the Contributors Sheet**:
-
+**Updating the Contributors Sheet**:
   1. Admin users can type `!fillSheet` to update the contributors sheet with all people who possess the "Contributor" role.
   2. `!pairUp` (ADMIN only) - Automate the creation of "buddy pairings" from a list of names and User IDs.
 
-- **Pairing Contributors**:
+*Pairing Contributors:*
   ~~Admin users can type `!pairContributors` in any channel to initiate the **pairing process**.~~
   Pairings are done **manually** for now.
+
+**Start the buddy review process**:
 - `!dmBuddy @Username` (ADMIN only) - Start the buddy feedback process for a **pair of user (contributor) and buddy**:
   1. The contributor and buddy get a DM that its time for their buddy feedback call and the contributor is asked for the date and time. The state is set to `awaitingDate`.
   1. Once the date and time are submitted to the buddy-bot via DM (by the contributor) the state is set to `date set` and the date is recorded in the google sheet.
   1. A message is posted to the `ANNOUNCEMENT_CHANNEL` that a buddy call is about to happen and is asking the community for feedback.
 - `!selfReview` (ADMIN only) - Check the backend sheet for buddy pairs with the state `date set` and send the "self review form" to them.
 - `!DMselfReview @Username1 @Username2` (ADMIN only) - Buddy Bot sends a DM to @Username1&2 and invites them to fill out the "Self Review form"
+- `!adminFeedback @Contributor @Username1 @Username2` (ADMIN only) - Buddy Bot sends a DM to @Username1&2 and invites them to fill out the "feedback form" **for** the **@Contributor**
+- `!leaderFeedback @Leader @Username1 @Username2` (ADMIN only) - Buddy Bot sends a DM to @Username1&2 and invites them to fill out the "leader feedback form" **for** the **@Leader**
 
+**Contributor commands**
 - `!getFeedback @Username1 @Username2` - Buddy Bot sends a DM to @Username1&2 and invites them to fill out the "feedback form"
+
+**CRON jobs**
+- **once a day**, buddy-bot will check the *Buddycalldate*-column for **calls scheduled for the following day**. If it discovers a call to be scheduled it will **send** the relevant *Doclink* to the respective buddy. A message is sent to *ANNOUNCEMENT_CHANNEL* detailing the buddy pair that got notified.
 
 ### WIP
 
