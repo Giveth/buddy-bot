@@ -61,6 +61,11 @@ This Discord bot facilitates a buddy pairing system, allowing users to be paired
   1. The contributor and buddy get a DM that its time for their buddy feedback call and the contributor is asked for the date and time. The state is set to `awaitingDate`.
   1. Once the date and time are submitted to the buddy-bot via DM (by the contributor) the state is set to `date set` and the date is recorded in the google sheet.
   1. A message is posted to the `ANNOUNCEMENT_CHANNEL` that a buddy call is about to happen and is asking the community for feedback.
+
+**After the buddy call**:
+- `!checkCalls` (ADMIN only) - Checks the backend sheet for Buddy calls that **happened at leaste 1 hour ago** with a **Status of "date set"**. For all pairs it can find this condition to be true, it will DM them and ask: **"Did the buddy call happen?"**. If the answer is yes, we change **Status to "paired no date", delete the Buddycalldate and save the current date in "Lastcall" (please note that this function *can* be triggered manually, but there is also a cron job calling this function every hour 
+
+**Feedback form helpers**:
 - `!selfReview` (ADMIN only) - Check the backend sheet for buddy pairs with the state `date set` and send the "self review form" to them.
 - `!DMselfReview @Username1 @Username2` (ADMIN only) - Buddy Bot sends a DM to @Username1&2 and invites them to fill out the "Self Review form"
 - `!adminFeedback @Contributor @Username1 @Username2` (ADMIN only) - Buddy Bot sends a DM to @Username1&2 and invites them to fill out the "feedback form" **for** the **@Contributor**
@@ -71,6 +76,7 @@ This Discord bot facilitates a buddy pairing system, allowing users to be paired
 
 **CRON jobs**
 - **once a day**, buddy-bot will check the *Buddycalldate*-column for **calls scheduled for the following day**. If it discovers a call to be scheduled it will **send** the relevant *Doclink* to the respective buddy. A message is sent to *ANNOUNCEMENT_CHANNEL* detailing the buddy pair that got notified.
+- **every hour** buddy-bot will run the checkCalls() function to see if a buddy call took place within the last hour and then closing this buddy call round for the pair.
 
 ### WIP
 
