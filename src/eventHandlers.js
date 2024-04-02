@@ -35,7 +35,10 @@ async function handleMessages(message) {
   console.log(`Received message from ${message.author.id}: ${message.content}`);
   try {
     // Ignore messages that don't start with the PREFIX
-    if (!message.content.startsWith(PREFIX)) return;
+    if (!message.content.startsWith(PREFIX)) {
+      console.log(`Ignoring message: ${message.content}`);
+      return;
+    }
 
     if (
       message.channel.type === "dm" &&

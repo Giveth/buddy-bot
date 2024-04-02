@@ -15,6 +15,8 @@ const SELFREVIEW_FORM = process.env.SELFREVIEW_FORM;
 const FEEDBACK_FORM = process.env.FEEDBACK_FORM;
 const LEADER_FEEDBACK_FORM = process.env.LEADER_FEEDBACK_FORM;
 
+const PREFIX = process.env.PREFIX;
+
 const bot = new Client();
 const doc = new GoogleSpreadsheet(SPREADSHEET_ID);
 const userStates = {}; // State management object
@@ -34,4 +36,5 @@ module.exports = {
   LEADER_FEEDBACK_FORM,
   ADMIN_IDS,
   ROLE,
+  PREFIX,
 };
