@@ -37,14 +37,6 @@ async function handleMessages(message) {
     // Ignore messages that don't start with the PREFIX
     if (!message.content.startsWith(PREFIX)) return;
 
-    // Ignore messages that are not in the ANNOUNCEMENT_CHANNEL or DMs
-    if (
-      message.channel.type !== "dm" ||
-      message.channel.id !== ANNOUNCEMENT_CHANNEL_ID ||
-      message.channel.id !== INTERFACE_CHANNEL_ID
-    ) {
-      return;
-    }
     if (
       message.channel.type === "dm" &&
       (ADMIN_IDS.includes(message.author.id) ||
