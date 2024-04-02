@@ -10,6 +10,7 @@ const {
   LEADER_FEEDBACK_FORM,
   PREFIX,
   SELFREVIEW_FORM,
+  INTERFACE_CHANNEL_ID,
 } = require("./configurations");
 const {
   updateContributorsSheet,
@@ -38,8 +39,9 @@ async function handleMessages(message) {
 
     // Ignore messages that are not in the ANNOUNCEMENT_CHANNEL or DMs
     if (
-      message.channel.type !== "dm" &&
-      message.channel.id !== ANNOUNCEMENT_CHANNEL_ID
+      message.channel.type !== "dm" ||
+      message.channel.id !== ANNOUNCEMENT_CHANNEL_ID ||
+      message.channel.id !== INTERFACE_CHANNEL_ID
     ) {
       return;
     }
