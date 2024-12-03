@@ -179,8 +179,10 @@ async function handleMessages(message) {
       );
     }
 
-    if (message.content.startsWith("!adminFeedback") &&
-      (ADMIN_IDS.includes(message.author.id)) {
+    if (
+      message.content.startsWith("!adminFeedback") &&
+      ADMIN_IDS.includes(message.author.id)
+    ) {
       const args = message.content.split(" ");
       const feedbackForUsername = args[1]; // The user that the feedback is for
 
@@ -218,8 +220,10 @@ async function handleMessages(message) {
       );
     }
 
-    if (message.content.startsWith("!leaderFeedback") &&
-      (ADMIN_IDS.includes(message.author.id)) {
+    if (
+      message.content.startsWith("!leaderFeedback") &&
+      ADMIN_IDS.includes(message.author.id)
+    ) {
       const args = message.content.split(" ");
       const feedbackForUsername = args[1]; // The user that the feedback is for
 
