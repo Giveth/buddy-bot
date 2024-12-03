@@ -179,15 +179,10 @@ async function handleMessages(message) {
       );
     }
 
-    if (message.content.startsWith("!adminFeedback")) {
+    if (message.content.startsWith("!adminFeedback")) &&
+      (ADMIN_IDS.includes(message.author.id) {
       const args = message.content.split(" ");
       const feedbackForUsername = args[1]; // The user that the feedback is for
-
-      // Check if the command issuer is an admin
-      if (!message.member.hasPermission("ADMINISTRATOR")) {
-        message.reply("You must be an admin to use this command!");
-        return;
-      }
 
       // Check if a username was provided
       if (!feedbackForUsername) {
@@ -223,15 +218,10 @@ async function handleMessages(message) {
       );
     }
 
-    if (message.content.startsWith("!leaderFeedback")) {
+    if (message.content.startsWith("!leaderFeedback")) &&
+      (ADMIN_IDS.includes(message.author.id){
       const args = message.content.split(" ");
       const feedbackForUsername = args[1]; // The user that the feedback is for
-
-      // Check if the command issuer is an admin
-      if (!message.member.hasPermission("ADMINISTRATOR")) {
-        message.reply("You must be an admin to use this command!");
-        return;
-      }
 
       // Check if a username was provided
       if (!feedbackForUsername) {
